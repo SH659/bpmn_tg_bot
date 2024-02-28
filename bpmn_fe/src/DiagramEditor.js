@@ -34,8 +34,30 @@ const DiagramEditor = () => {
         }
     }, [diagramId]);
 
+    const handleSave = async () => {
+        if (!modelerInstance.current) {
+            console.error('Modeler is not initialized');
+            return;
+        }
+
+        await modelerInstance.current.saveXML().then(
+            async (xml) => {
+                console.log('Saving diagram:', xml)
+                try {
+                    await axios.put(`${process.env.REACT_APP_BACKEND_URL}/diagrams/${diagramId}`, xml);
+                } catch (error) {
+                    console.error('Failed to save diagram:', error);
+                }
+            }
+        );
+    };
+
+
     return (
         <div style={{height: '100vh', width: '100%'}}>
+            <div style={{margin: '10px'}}>
+                <button onClick={handleSave}>Save Diagram</button>
+            </div>
             <div ref={modelerRef} style={{height: '100%', width: '100%'}}></div>
         </div>
     );
