@@ -1,14 +1,16 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {useParams} from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import customModule from "./customModule";
+import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
 
 const DiagramEditor = () => {
-    const {diagramId} = useParams();
+    const { diagramId } = useParams();
     const modelerRef = useRef(null);
     const modelerInstance = useRef(null);
     const [diagramName, setDiagramName] = useState('');
+    const [isEditingName, setIsEditingName] = useState(false);
 
     useEffect(() => {
         if (!modelerInstance.current && modelerRef.current) {
@@ -23,9 +25,9 @@ const DiagramEditor = () => {
         const fetchAndLoadDiagram = async () => {
             try {
                 const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/diagrams/${diagramId}`);
-                const {xml, name} = response.data;
+                const { xml, name } = response.data; // Assuming name is part of the response
                 await modelerInstance.current.importXML(xml);
-                setDiagramName(name);
+                setDiagramName(name || 'New Diagram');
             } catch (error) {
                 console.error('Failed to fetch or import diagram:', error);
             }
@@ -42,8 +44,7 @@ const DiagramEditor = () => {
             return;
         }
 
-        modelerInstance.current.saveXML({format: true}).then(async ({xml}) => {
-            console.log('Saving diagram:', xml);
+        modelerInstance.current.saveXML({ format: true }).then(async ({ xml }) => {
             try {
                 await axios.put(`${process.env.REACT_APP_BACKEND_URL}/diagrams/${diagramId}`, {
                     xml,
@@ -56,18 +57,38 @@ const DiagramEditor = () => {
     };
 
 
+    const handleNameChange = (e) => {
+        if (e.key === 'Enter' || e.type === 'blur') {
+            setIsEditingName(false);
+            handleSave();
+        }
+    };
+
     return (
-        <div style={{height: '100vh', width: '100%'}}>
-            <div style={{margin: '10px'}}>
-                <input
-                    type="text"
-                    value={diagramName}
-                    onChange={(e) => setDiagramName(e.target.value)}
-                    placeholder="Diagram Name"
-                />
-                <button onClick={handleSave}>Save Diagram</button>
+        <div className="container-fluid" style={{ height: '100vh' }}>
+            <div className="row mb-2">
+                <div className="col">
+                    {isEditingName ? (
+                        <input
+                            type="text"
+                            className="form-control"
+                            value={diagramName}
+                            onBlur={handleNameChange}
+                            onKeyDown={(e) => e.key === 'Enter' && handleNameChange(e)}
+                            onChange={(e) => setDiagramName(e.target.value)}
+                            autoFocus
+                        />
+                    ) : (
+                        <h3 onClick={() => setIsEditingName(true)} style={{ cursor: 'pointer' }}>
+                            {diagramName || 'Click to set a diagram name'}
+                        </h3>
+                    )}
+                </div>
+                <div className="col-auto">
+                    <button className="btn btn-primary" onClick={handleSave}>Save Diagram</button>
+                </div>
             </div>
-            <div ref={modelerRef} style={{height: '100%', width: '100%'}}></div>
+            <div ref={modelerRef} className="row" style={{ height: 'calc(100% - 38px)' }}></div>
         </div>
     );
 };
