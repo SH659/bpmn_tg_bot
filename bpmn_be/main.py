@@ -41,6 +41,11 @@ class CreateDiagram(BaseModel):
     xml: str = None
 
 
+class UpdateDiagram(BaseModel):
+    name: str = None
+    xml: str = None
+
+
 @app.get("/diagrams/", response_model=List[Diagram])
 async def list_diagrams():
     return list(diagrams.values())
@@ -67,10 +72,17 @@ async def create_empty_diagram(create_diagram_req: CreateDiagram):
 
 
 @app.put("/diagrams/{diagram_id}", response_model=Diagram)
-async def update_diagram(diagram_id: str, diagram: Diagram):
+async def update_diagram(diagram_id: uuid.UUID, diagram_update: UpdateDiagram):
     if diagram_id in diagrams:
-        diagrams[diagram_id] = diagram
-        return diagram
+        old_diagram = diagrams[diagram_id]
+        new_diagram = Diagram(
+            id=old_diagram.id,
+            name=diagram_update.name or old_diagram.name,
+            xml=diagram_update.xml or old_diagram.xml,
+        )
+        diagrams[diagram_id] = new_diagram
+        return new_diagram
+    logger.info("Diagram not found")
     raise HTTPException(status_code=404, detail="Diagram not found")
 
 
