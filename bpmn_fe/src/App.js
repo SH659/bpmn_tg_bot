@@ -1,33 +1,16 @@
-import React, {useEffect, useRef} from 'react';
-import BpmnModeler from 'bpmn-js/lib/Modeler';
-import customModule from './custom';
-import 'bpmn-js/dist/assets/diagram-js.css'; // Core styles for diagram components
-import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css'; // Icons and fonts
+import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import DiagramList from './DiagramList';
+import DiagramEditor from './DiagramEditor';
 
-const BPMNModelerComponent = () => {
-    const modelerRef = useRef(null); // DOM reference for the container
-    const bpmnModeler = useRef(null); // To store the instance of BpmnModeler
-
-    useEffect(() => {
-        if (!bpmnModeler.current) {
-            bpmnModeler.current = new BpmnModeler({
-                container: modelerRef.current,
-                additionalModules: [customModule],
-            });
-        }
-
-        const importDiagram = async () => {
-            const response = await fetch('empty.bpmn');
-            const diagramXML = await response.text();
-            await bpmnModeler.current.importXML(diagramXML)
-        };
-
-        importDiagram().catch(err => console.error("Error importing diagram:", err));
-    }, []); // Empty dependency array ensures this effect runs once on component mount
-
+const App = () => {
     return (
-        <div ref={modelerRef} style={{width: '100%', height: '100vh'}}></div>
+        <Router>
+            <Routes>
+                <Route path="/" element={<DiagramList/>} exact/>
+                <Route path="/editor/:diagramId" element={<DiagramEditor />} />
+            </Routes>
+        </Router>
     );
 };
 
-export default BPMNModelerComponent;
+export default App
