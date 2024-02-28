@@ -106,7 +106,7 @@ const DiagramEditor = () => {
                 </div>
             </div>
             <hr/>
-            <div ref={modelerRef} className="row" style={{height: 'calc(100% - 56px)'}}></div>
+            <div ref={modelerRef} className="row" style={{height: 'calc(100% - 100px)'}}></div>
         </div>
     );
 };
