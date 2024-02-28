@@ -13,7 +13,6 @@ const BPMNModelerComponent = () => {
             bpmnModeler.current = new BpmnModeler({
                 container: modelerRef.current,
                 additionalModules: [customModule],
-                moddleExtensions: {}
             });
         }
 
