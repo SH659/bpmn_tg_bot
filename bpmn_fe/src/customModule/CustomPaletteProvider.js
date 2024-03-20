@@ -12,20 +12,20 @@ export default class CustomPaletteProvider extends PaletteProvider {
             globalConnect = this._globalConnect,
             translate = this._translate;
 
+
         function createAction(type, group, className, title, options) {
+
             function createListener(event) {
                 var shape = elementFactory.createShape(assign({type: type}, options));
-                if (options) {
-                    shape.businessObject.di.isExpanded = options.isExpanded;
-                }
                 create.start(event, shape);
             }
 
             var shortType = type.replace(/^bpmn:/, '');
+
             return {
                 group: group,
                 className: className,
-                title: title || translate('Create {type}', {type: shortType}),
+                title: title || 'Create ' + shortType,
                 action: {
                     dragstart: createListener,
                     click: createListener
