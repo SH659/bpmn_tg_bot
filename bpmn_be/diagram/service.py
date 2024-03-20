@@ -33,6 +33,8 @@ class DiagramService:
 
     async def update(self, diagram_id: uuid.UUID, request: UpdateDiagram) -> Diagram:
         old = await self.diagram_repo.get_by_id(diagram_id)
+        if old is None:
+            raise DiagramNotFoundError
         new = Diagram(
             id=old.id,
             name=request.name or old.name,
