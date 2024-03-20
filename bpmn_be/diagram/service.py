@@ -2,10 +2,10 @@ import uuid
 
 from injector import inject
 
-from bpmn_be.bases.repo import Repo
-from bpmn_be.diagram.errors import DiagramNotFoundError
-from bpmn_be.diagram.models import Diagram, empty_diagram_xml
-from bpmn_be.diagram.schemas import CreateDiagram, UpdateDiagram
+from bases.repo import Repo
+from diagram.errors import DiagramNotFoundError
+from diagram.models import Diagram, empty_diagram_xml
+from diagram.schemas import CreateDiagram, UpdateDiagram
 
 
 class DiagramService:
