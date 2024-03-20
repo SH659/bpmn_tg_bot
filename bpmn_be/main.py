@@ -35,11 +35,7 @@ app.include_router(api_router)
 
 class AppModule(Module):
     def configure(self, binder: Binder) -> None:
-        binder.bind(
-            Repo[uuid.UUID, Diagram],
-            to=InstanceProvider(InMemoryRepo()),
-            scope=singleton
-        )
+        binder.bind(Repo[uuid.UUID, Diagram], to=InstanceProvider(InMemoryRepo()), scope=singleton)
 
 
 injector.binder.install(AppModule())
