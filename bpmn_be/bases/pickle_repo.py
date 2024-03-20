@@ -1,4 +1,3 @@
-import atexit
 import pickle
 
 from bases.in_memory_repo import InMemoryRepo
@@ -9,7 +8,6 @@ class PickleRepo(InMemoryRepo[T_id, T_obj]):
     def __init__(self, filename):
         super().__init__()
         self._filename = filename
-        atexit.register(self.save)
 
     def load(self):
         try:

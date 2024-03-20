@@ -4,8 +4,11 @@ from bases.repo import Repo, T_id, T_obj
 
 
 class InMemoryRepo(Repo[T_id, T_obj]):
-    def __init__(self):
+    def __init__(self, objects: list[T_obj] = None):
         self._storage = {}
+        if objects:
+            for obj in objects:
+                self._storage[obj.id] = obj
 
     async def get_by_id(self, id: T_id) -> Optional[T_obj]:
         return self._storage.get(id)

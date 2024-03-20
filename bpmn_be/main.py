@@ -1,3 +1,5 @@
+import asyncio
+import atexit
 import uuid
 from contextlib import asynccontextmanager
 
@@ -6,12 +8,15 @@ from injector import Module, Binder, singleton, InstanceProvider
 from starlette.middleware.cors import CORSMiddleware
 
 from api.api_router import api_router
+from bases.in_memory_repo import InMemoryRepo
 from bases.pickle_repo import PickleRepo
 from bases.repo import Repo
 from core.di import injector
 from core.logs import configure_logging
 from diagram.errors import DiagramNotFoundError
 from diagram.models import Diagram
+from tg_bot.models import Bot
+from tg_bot.service import TgBotService
 
 configure_logging()
 
@@ -23,7 +28,28 @@ async def return_404(req, exc):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     injector.binder.install(AppModule())
+    tg_bot_service = injector.get(TgBotService)
+    task = asyncio.create_task(tg_bot_service.run(bot_id))
     yield
+    task.cancel()
+
+
+bot_id = uuid.uuid4()
+
+
+class AppModule(Module):
+    def configure(self, binder: Binder) -> None:
+        # binder.bind(Repo[uuid.UUID, Diagram], to=InstanceProvider(InMemoryRepo()), scope=singleton)
+        diagram_repo = PickleRepo('diagram_repo.pkl')
+        diagram_repo.load()
+        atexit.register(diagram_repo.save)
+        binder.bind(Repo[uuid.UUID, Diagram], to=InstanceProvider(diagram_repo), scope=singleton)
+
+        token = ''
+        diagram_id = uuid.UUID('b9a7d66f-c0e3-4b7e-9c9b-e047b998722c')
+        bot = Bot(id=bot_id, name='test', token=token, diagram_id=diagram_id)
+        bot_repo = InMemoryRepo([bot])
+        binder.bind(Repo[uuid.UUID, Bot], to=InstanceProvider(bot_repo), scope=singleton)
 
 
 app = FastAPI(
@@ -40,15 +66,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(api_router)
-
-
-class AppModule(Module):
-    def configure(self, binder: Binder) -> None:
-        # binder.bind(Repo[uuid.UUID, Diagram], to=InstanceProvider(InMemoryRepo()), scope=singleton)
-        diagram_repo = PickleRepo('diagram_repo.pkl')
-        diagram_repo.load()
-        binder.bind(Repo[uuid.UUID, Diagram], to=InstanceProvider(diagram_repo), scope=singleton)
-
 
 if __name__ == '__main__':
     import uvicorn
