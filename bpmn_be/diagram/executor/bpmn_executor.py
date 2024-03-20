@@ -61,7 +61,6 @@ class BpmnExecutor:
         while True:
             event = self.events[state.current_event_id]
             r, should_continue = self.execute_event(event, data)
-            print('@', r, should_continue, state.current_event_id, event.name, event.type)
             res.extend(r)
             self.go_to_next_event(state)
             if not should_continue:

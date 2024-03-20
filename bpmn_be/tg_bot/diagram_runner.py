@@ -10,18 +10,25 @@ from diagram.parser.bpmn_parser import xml_to_process
 from tg_bot.models import Bot
 
 
-async def run_diagram(bot: Bot, diagram: Diagram):
+async def run_diagram(tg_bot: Bot, diagram: Diagram):
     process = xml_to_process(diagram.xml)
     executor = BpmnExecutor(process)
+    bot = AiogramBot(token=tg_bot.token)
 
     dp = Dispatcher()
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
     @dp.message()
     async def echo(message: types.Message, state: FSMContext):
+        await bot.send_chat_action(message.chat.id, 'typing')
         data = await state.get_data()
         bpmn_state = State(**data['bpmn_state']) if data else State()
-        res, bpmn_state = executor.step(Data(message=message.text), bpmn_state)
+
+        try:
+            res, bpmn_state = executor.step(Data(message=message.text), bpmn_state)
+        except ValueError as e:
+            await message.answer('Dont understand your message')
+            return
 
         for item in res:
             match item:
@@ -34,4 +41,4 @@ async def run_diagram(bot: Bot, diagram: Diagram):
 
         await state.set_data({'bpmn_state': bpmn_state.model_dump(mode='json')})
 
-    await dp.start_polling(AiogramBot(token=bot.token))
+    await dp.start_polling(bot)

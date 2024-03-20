@@ -5,7 +5,7 @@ from injector import inject
 
 from bases.repo import Repo
 from diagram.service import DiagramService
-from tg_bot.diagram_runner_bot import run_diagram
+from tg_bot.diagram_runner import run_diagram
 from tg_bot.models import Bot
 from tg_bot.schemas import CreateBot, UpdateBot
 
