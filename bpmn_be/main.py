@@ -47,7 +47,6 @@ class AppModule(Module):
         # binder.bind(Repo[uuid.UUID, Diagram], to=InstanceProvider(InMemoryRepo()), scope=singleton)
         diagram_repo = PickleRepo('diagram_repo.pkl')
         diagram_repo.load()
-        print(len(diagram_repo._storage))
         binder.bind(Repo[uuid.UUID, Diagram], to=InstanceProvider(diagram_repo), scope=singleton)
 
 

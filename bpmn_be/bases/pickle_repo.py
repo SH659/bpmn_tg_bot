@@ -21,4 +21,3 @@ class PickleRepo(InMemoryRepo[T_id, T_obj]):
     def save(self):
         with open(self._filename, 'wb') as f:
             pickle.dump(self._storage, f)
-            print(f'saved to {self._filename}', len(self._storage))
