@@ -1,0 +1,2 @@
+class DiagramNotFoundError(Exception):
+    pass

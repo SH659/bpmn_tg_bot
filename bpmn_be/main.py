@@ -1,13 +1,28 @@
-import logging
-import sys
 import uuid
-from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI, Depends, HTTPException
+from injector import Injector, Module, Binder, singleton, InstanceProvider, ProviderOf
 from starlette.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from bpmn_be.bases.repo import Repo, InMemoryRepo
+from bpmn_be.core.logs import configure_logging
+from bpmn_be.diagram.errors import DiagramNotFoundError
+from bpmn_be.diagram.models import Diagram
+from bpmn_be.diagram.schemas import CreateDiagram, UpdateDiagram
+from bpmn_be.diagram.service import DiagramService
+
+configure_logging()
+
+
+async def return_404(req, exc):
+    raise HTTPException(status_code=404, detail="Not found")
+
+
+app = FastAPI(
+    exception_handlers={
+        DiagramNotFoundError: return_404
+    }
+)
 app.add_middleware(
     CORSMiddleware,  # noqa
     allow_origins=["*"],
@@ -15,75 +30,54 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-diagrams = {}
-
-with open('empty.bpmn', 'r') as file:
-    empty_diagram = file.read()
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(levelname)-9s %(asctime)s - %(name)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
 
-class Diagram(BaseModel):
-    id: uuid.UUID
-    name: Optional[str]
-    xml: str
+class AppModule(Module):
+    def configure(self, binder: Binder) -> None:
+        binder.bind(
+            Repo[uuid.UUID, Diagram],
+            to=InstanceProvider(InMemoryRepo()),
+            scope=singleton
+        )
 
 
-class CreateDiagram(BaseModel):
-    name: str = None
-    xml: str = None
+injector = Injector([AppModule()])
 
 
-class UpdateDiagram(BaseModel):
-    name: str = None
-    xml: str = None
+def di(type):
+    return Depends(injector.get(ProviderOf[type]).get)
 
 
-@app.get("/diagrams/", response_model=List[Diagram])
-async def list_diagrams():
-    return list(diagrams.values())
+@app.get("/diagrams/", response_model=list[Diagram])
+async def list_diagrams(
+    ds: DiagramService = di(DiagramService)
+):
+    return await ds.get_all()
 
 
 @app.get("/diagrams/{diagram_id}", response_model=Diagram)
-async def get_diagram(diagram_id: uuid.UUID):
-    if diagram_id in diagrams:
-        logger.info(f"Returning diagram {diagram_id}. XML len={len(diagrams[diagram_id].xml)}")
-        return diagrams[diagram_id]
-    raise HTTPException(status_code=404, detail="Diagram not found")
+async def get_diagram(
+    diagram_id: uuid.UUID,
+    ds: DiagramService = di(DiagramService)
+):
+    return await ds.get_by_id(diagram_id)
 
 
 @app.post("/diagrams/", response_model=Diagram)
-async def create_empty_diagram(create_diagram_req: CreateDiagram):
-    diagram = Diagram(
-        id=uuid.uuid4(),
-        name=create_diagram_req.name,
-        xml=create_diagram_req.xml or empty_diagram,
-    )
-    diagrams[diagram.id] = diagram
-    logger.info(f"Created diagram {diagram.id}")
-    return diagram
+async def create_diagram(
+    create_diagram_req: CreateDiagram,
+    ds: DiagramService = di(DiagramService)
+):
+    return await ds.create(create_diagram_req)
 
 
 @app.put("/diagrams/{diagram_id}", response_model=Diagram)
-async def update_diagram(diagram_id: uuid.UUID, diagram_update: UpdateDiagram):
-    if diagram_id in diagrams:
-        old_diagram = diagrams[diagram_id]
-        new_diagram = Diagram(
-            id=old_diagram.id,
-            name=diagram_update.name or old_diagram.name,
-            xml=diagram_update.xml or old_diagram.xml,
-        )
-        diagrams[diagram_id] = new_diagram
-        return new_diagram
-    logger.info("Diagram not found")
-    raise HTTPException(status_code=404, detail="Diagram not found")
+async def update_diagram(
+    diagram_id: uuid.UUID,
+    diagram_update: UpdateDiagram,
+    ds: DiagramService = di(DiagramService)
+):
+    return await ds.update(diagram_id, diagram_update)
 
 
 if __name__ == '__main__':
