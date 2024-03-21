@@ -1,3 +1,4 @@
+import asyncio
 import uuid
 from uuid import UUID
 
@@ -19,6 +20,7 @@ class TgBotService:
     ):
         self.bot_repo = bot_repo
         self.diagram_service = diagram_service
+        self.running = {}
 
     async def create(self, request: CreateBot):
         diagram = await self.diagram_service.get_by_id(request.diagram_id)
@@ -51,4 +53,9 @@ class TgBotService:
     async def run(self, bot_id: UUID):
         bot = await self.bot_repo.get_by_id(bot_id)
         diagram = await self.diagram_service.get_by_id(bot.diagram_id)
-        await run_diagram(bot, diagram)
+        self.running[bot.id] = asyncio.create_task(run_diagram(bot, diagram))
+
+    async def shutdown(self):
+        for task in self.running.values():
+            task.cancel()
+        self.running.clear()

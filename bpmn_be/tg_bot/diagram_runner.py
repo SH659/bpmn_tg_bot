@@ -41,4 +41,4 @@ async def run_diagram(tg_bot: Bot, diagram: Diagram):
 
         await state.set_data({'bpmn_state': bpmn_state.model_dump(mode='json')})
 
-    await dp.start_polling(bot)
+    await dp.start_polling(bot, handle_signals=False)

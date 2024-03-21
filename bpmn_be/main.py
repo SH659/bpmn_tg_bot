@@ -1,4 +1,3 @@
-import asyncio
 import atexit
 import uuid
 from contextlib import asynccontextmanager
@@ -29,9 +28,11 @@ async def return_404(req, exc):
 async def lifespan(app: FastAPI):
     injector.binder.install(AppModule())
     tg_bot_service = injector.get(TgBotService)
-    task = asyncio.create_task(tg_bot_service.run(bot_id))
-    yield
-    task.cancel()
+    await tg_bot_service.run(bot_id)
+    try:
+        yield
+    finally:
+        await tg_bot_service.shutdown()
 
 
 bot_id = uuid.uuid4()
