@@ -5,8 +5,10 @@ from aiogram import Dispatcher
 from injector import inject, singleton
 
 from bases.repo import Repo
+from core.settings import Settings
 from diagram.service import DiagramService
 from tg_bot.diagram_runner import run_diagram
+from tg_bot.errors import BotNotFoundError
 from tg_bot.models import Bot
 from tg_bot.schemas import CreateBot, UpdateBot
 
@@ -17,11 +19,20 @@ class TgBotService:
     def __init__(
         self,
         bot_repo: Repo[UUID, Bot],
-        diagram_service: DiagramService
+        diagram_service: DiagramService,
+        settings: Settings
     ):
         self.bot_repo = bot_repo
         self.diagram_service = diagram_service
         self.running: dict[UUID, Dispatcher] = {}
+        self.settings = settings
+
+    async def get_default(self):
+        bots = await self.bot_repo.get_all()
+        for bot in bots:
+            if bot.name == self.settings.DEFAULT_BOT:
+                return bot
+        raise BotNotFoundError
 
     async def get_all(self):
         return await self.bot_repo.get_all()

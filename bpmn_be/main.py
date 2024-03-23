@@ -1,5 +1,6 @@
 import atexit
 import json
+import os
 import uuid
 from contextlib import asynccontextmanager
 
@@ -16,6 +17,8 @@ from core.logs import configure_logging
 from core.settings import settings
 from diagram.errors import DiagramNotFoundError
 from diagram.models import Diagram
+from diagram.service import DiagramService
+from tg_bot.errors import BotNotFoundError
 from tg_bot.models import Bot
 from tg_bot.service import TgBotService
 
@@ -30,10 +33,16 @@ async def return_404(req, exc):
 async def lifespan(app: FastAPI):
     injector.binder.install(AppModule())
     diagram_repo: Repo[uuid.UUID, Diagram] = injector.get(Repo[uuid.UUID, Diagram])
-    # with open('examples/echo_diagram.json') as f:
-    with open('examples/curl_example.json') as f:
-        diagram = Diagram(**json.load(f))
-        await diagram_repo.create(diagram)
+    diagram_service: DiagramService = injector.get(DiagramService)
+
+    for file in os.listdir('examples'):
+        with open(f'examples/{file}') as f:
+            diagram = Diagram(**json.load(f))
+            try:
+                await diagram_service.get_by_name(diagram.name)
+            except DiagramNotFoundError:
+                print(diagram)
+                await diagram_repo.create(diagram)
 
     bot_repo: Repo[uuid.UUID, Bot] = injector.get(Repo[uuid.UUID, Bot])
     token = settings.DEFAULT_TG_BOT_TOKEN
@@ -60,7 +69,8 @@ class AppModule(Module):
 
 app = FastAPI(
     exception_handlers={
-        DiagramNotFoundError: return_404
+        DiagramNotFoundError: return_404,
+        BotNotFoundError: return_404,
     },
     lifespan=lifespan
 )

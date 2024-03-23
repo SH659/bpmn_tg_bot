@@ -1,0 +1,2 @@
+class BotNotFoundError(Exception):
+    pass

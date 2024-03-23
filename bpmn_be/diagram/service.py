@@ -22,6 +22,13 @@ class DiagramService:
             raise DiagramNotFoundError
         return diagram
 
+    async def get_by_name(self, name: str) -> Diagram:
+        diagrams = await self.diagram_repo.get_all()
+        for diagram in diagrams:
+            if diagram.name == name:
+                return diagram
+        raise DiagramNotFoundError
+
     async def create(self, request: CreateDiagram) -> Diagram:
         diagram = Diagram(
             id=uuid.uuid4(),
