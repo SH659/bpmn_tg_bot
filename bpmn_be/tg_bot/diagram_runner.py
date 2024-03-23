@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import sys
+import traceback
 
 from aiogram import Bot as AiogramBot, Dispatcher, types
 from aiogram.fsm.context import FSMContext
@@ -28,7 +29,8 @@ async def run_diagram(tg_bot: Bot, diagram: Diagram):
         try:
             res, bpmn_state = executor.step(Data(message=message.text), bpmn_state)
         except ValueError as e:
-            await message.answer('Dont understand your message')
+            traceback.print_exc()
+            await message.answer('internal error')
             return
 
         for item in res:

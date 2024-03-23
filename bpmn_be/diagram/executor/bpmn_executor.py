@@ -1,7 +1,7 @@
 from copy import deepcopy
 from dataclasses import dataclass
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from diagram.parser.bpmn_parser import Process, SequenceFlowItem, Event
 
@@ -27,6 +27,7 @@ class WaitMessage(Action):
 
 class State(BaseModel):
     current_event_id: str | None = None
+    data: dict = Field(default_factory=dict)
 
 
 class BpmnExecutor:
@@ -55,12 +56,17 @@ class BpmnExecutor:
                     state.current_event_id = event.id
                     break
             else:
-                raise ValueError('No start event found')
+                for event in self.process.events:
+                    if event.type == 'startEvent' and not event.name.startswith('/'):
+                        state.current_event_id = event.id
+                        break
+                else:
+                    raise ValueError('No start event found')
 
         res = []
         while True:
             event = self.events[state.current_event_id]
-            r, should_continue = self.execute_event(event, data)
+            r, should_continue = self.execute_event(event, data, state)
             res.extend(r)
             self.go_to_next_event(state)
             if not should_continue:
@@ -68,12 +74,27 @@ class BpmnExecutor:
         return res, state
 
     @staticmethod
-    def execute_event(event, data) -> tuple[list[Action], bool]:
+    def execute_event(event, data, state: State) -> tuple[list[Action], bool]:
         match event.type:
             case 'startEvent':
+                if ':' in event.name:
+                    key, dt = event.name.split(':')
+                    key = key.strip()
+                    dt = dt.strip()
+                    dt = {
+                        'int': int,
+                        'float': float,
+                        'str': str,
+                    }[dt]
+                    try:
+                        value = dt(data.message)
+                    except ValueError:
+                        return [SendMessage('Invalid value')], False
+                    state.data[key] = value
                 return [], True
             case 'intermediateThrowEvent':
-                return [SendMessage(event.name)], True
+                message = event.name.format_map(state.data)
+                return [SendMessage(message)], True
             case 'intermediateCatchEvent':
                 return [WaitMessage()], False
         return [], False
