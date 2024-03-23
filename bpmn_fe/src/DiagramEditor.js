@@ -5,6 +5,7 @@ import BpmnModeler from 'bpmn-js/lib/Modeler';
 import customModule from "./customModule";
 import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap CSS
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import resizeTask from 'bpmn-js-task-resize/lib';
 
 const DiagramEditor = () => {
     const navigate = useNavigate();
@@ -18,7 +19,8 @@ const DiagramEditor = () => {
         if (!modelerInstance.current && modelerRef.current) {
             modelerInstance.current = new BpmnModeler({
                 container: modelerRef.current,
-                additionalModules: [customModule],
+                additionalModules: [customModule, resizeTask],
+                  taskResizingEnabled: true,
             });
         }
     }, [diagramId]);
