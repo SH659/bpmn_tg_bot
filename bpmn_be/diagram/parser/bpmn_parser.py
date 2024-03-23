@@ -16,7 +16,7 @@ class Event(Model):
     name: str | None = Field(None, alias='@name')
     incoming: str | None = Field(None, alias='bpmn:incoming')
     outgoing: str | None = Field(None, alias='bpmn:outgoing')
-    message_event_definition: MessageEventDefinition = Field(alias='bpmn:messageEventDefinition')
+    message_event_definition: MessageEventDefinition | None = Field(None, alias='bpmn:messageEventDefinition')
     type: str
 
 
