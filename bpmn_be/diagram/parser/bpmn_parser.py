@@ -44,7 +44,7 @@ def xml_to_process(xml: str) -> Process:
                 value = [value]
                 process[key] = value
 
-        if key.startswith('bpmn:') and key.endswith('Event'):
+        if key.startswith('bpmn:') and any((key.endswith('Event'), key.endswith('Task'))):
             for value_item in value:
                 value_item['type'] = key.split(':')[-1]
             events.extend(value)

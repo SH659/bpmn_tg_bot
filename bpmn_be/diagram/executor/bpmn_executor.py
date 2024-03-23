@@ -1,6 +1,8 @@
 from copy import deepcopy
 from dataclasses import dataclass
 
+import curlparser
+import httpx
 from pydantic import BaseModel, Field
 
 from diagram.parser.bpmn_parser import Process, SequenceFlowItem, Event
@@ -48,35 +50,44 @@ class BpmnExecutor:
         self.flow_map: dict[str, SequenceFlowItem] = {f.id: f for f in process.sequence_flow}
         self.events: dict[str, Event] = {event.id: event for event in process.events}
 
-    def step(self, data: Data, state: State = None) -> tuple[list[Action], State]:
+    async def step(self, data: Data, state: State = None) -> tuple[list[Action], State]:
         state = deepcopy(state) if state is not None else State()
+
+        def current_event() -> Event | None:
+            return self.events.get(state.current_event_id)
+
+        if data.message.startswith('/'):
+            for event in self.process.events:
+                if event.type == 'startEvent' and not event.name.startswith('/'):
+                    state.current_event_id = event.id
+                    break
+
         if state.current_event_id is None or state.current_event_id not in self.events:
             for event in self.process.events:
                 if event.type == 'startEvent' and data.message == event.name:
                     state.current_event_id = event.id
                     break
-            else:
-                for event in self.process.events:
-                    if event.type == 'startEvent' and not event.name.startswith('/'):
-                        state.current_event_id = event.id
-                        break
-                else:
-                    raise ValueError('No start event found')
+
+        if state.current_event_id is None:
+            raise ValueError('No start event found')
 
         res = []
-        while True:
-            event = self.events[state.current_event_id]
-            r, should_continue = self.execute_event(event, data, state)
+        event = current_event()
+        while state.current_event_id:
+            r = await self.execute_event(event, data, state)
             res.extend(r)
             self.go_to_next_event(state)
-            if not should_continue:
+            event = current_event()
+            if event is not None and event.type in (
+                'intermediateCatchEvent'
+            ):
                 break
         return res, state
 
     @staticmethod
-    def execute_event(event, data, state: State) -> tuple[list[Action], bool]:
+    async def execute_event(event, data, state: State) -> list[Action]:
         match event.type:
-            case 'startEvent':
+            case 'startEvent' | 'intermediateCatchEvent':
                 if ':' in event.name:
                     key, dt = event.name.split(':')
                     key = key.strip()
@@ -89,15 +100,33 @@ class BpmnExecutor:
                     try:
                         value = dt(data.message)
                     except ValueError:
-                        return [SendMessage('Invalid value')], False
+                        return [SendMessage('Invalid value')]
                     state.data[key] = value
-                return [], True
+                return []
             case 'intermediateThrowEvent':
                 message = event.name.format_map(state.data)
-                return [SendMessage(message)], True
-            case 'intermediateCatchEvent':
-                return [WaitMessage()], False
-        return [], False
+                return [SendMessage(message)]
+            case 'serviceTask':
+                curl = curlparser.parse(event.name.format_map(state.data))
+                client = httpx.AsyncClient()
+                async with client:
+                    response = await client.request(
+                        method=curl.method,
+                        url=curl.url,
+                        headers=curl.header,
+                        data=curl.data,
+                    )
+                    state.data['resp'] = response.json()
+                    return []
+
+        return []
+
+    def get_next_event(self, state: State):
+        event = self.events[state.current_event_id]
+        if event.outgoing is None:
+            return None
+        flow_item = self.flow_map[event.outgoing]
+        return self.events[flow_item.target_ref]
 
     def go_to_next_event(self, state: State):
         event = self.events[state.current_event_id]

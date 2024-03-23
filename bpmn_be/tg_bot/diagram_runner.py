@@ -27,7 +27,7 @@ async def run_diagram(tg_bot: Bot, diagram: Diagram):
         bpmn_state = State(**data['bpmn_state']) if data else State()
 
         try:
-            res, bpmn_state = executor.step(Data(message=message.text), bpmn_state)
+            res, bpmn_state = await executor.step(Data(message=message.text), bpmn_state)
         except ValueError as e:
             traceback.print_exc()
             await message.answer('internal error')
