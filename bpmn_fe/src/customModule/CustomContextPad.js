@@ -1,7 +1,3 @@
-const SUITABILITY_SCORE_HIGH = 100,
-    SUITABILITY_SCORE_AVERGE = 50,
-    SUITABILITY_SCORE_LOW = 25;
-
 export default class CustomContextPad {
     constructor(bpmnFactory, config, contextPad, create, elementFactory, injector, translate) {
         this.bpmnFactory = bpmnFactory;
@@ -59,35 +55,7 @@ export default class CustomContextPad {
             };
         }
 
-        return {
-            // 'append.low-task': {
-            //   group: 'model',
-            //   className: 'bpmn-icon-task red',
-            //   title: translate('Append Task with low suitability score'),
-            //   action: {
-            //     click: appendServiceTask(SUITABILITY_SCORE_LOW),
-            //     dragstart: appendServiceTaskStart(SUITABILITY_SCORE_LOW)
-            //   }
-            // },
-            // 'append.average-task': {
-            //   group: 'model',
-            //   className: 'bpmn-icon-task yellow',
-            //   title: translate('Append Task with average suitability score'),
-            //   action: {
-            //     click: appendServiceTask(SUITABILITY_SCORE_AVERGE),
-            //     dragstart: appendServiceTaskStart(SUITABILITY_SCORE_AVERGE)
-            //   }
-            // },
-            // 'append.high-task': {
-            //   group: 'model',
-            //   className: 'bpmn-icon-task green',
-            //   title: translate('Append Task with high suitability score'),
-            //   action: {
-            //     click: appendServiceTask(SUITABILITY_SCORE_HIGH),
-            //     dragstart: appendServiceTaskStart(SUITABILITY_SCORE_HIGH)
-            //   }
-            // }
-        };
+        return {};
     }
 }
 

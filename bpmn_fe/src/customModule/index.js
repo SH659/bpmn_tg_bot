@@ -6,7 +6,10 @@ import CustomContextPadProvider from "./CustomContextPadProvider";
 import CustomReplaceMenuProvider from "./CustomReplaceMenuProvider";
 
 export default {
-    __init__: ['customContextPad', 'customPalette', 'customRenderer',
+    __init__: [
+        'customContextPad',
+        'customPalette',
+        'customRenderer',
         'paletteProvider',
         'contextPadProvider',
         'replaceMenuProvider'
