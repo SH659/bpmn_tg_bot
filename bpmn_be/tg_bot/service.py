@@ -1,8 +1,8 @@
-import asyncio
 import uuid
 from uuid import UUID
 
-from injector import inject
+from aiogram import Dispatcher
+from injector import inject, singleton
 
 from bases.repo import Repo
 from diagram.service import DiagramService
@@ -11,6 +11,7 @@ from tg_bot.models import Bot
 from tg_bot.schemas import CreateBot, UpdateBot
 
 
+@singleton
 class TgBotService:
     @inject
     def __init__(
@@ -20,9 +21,12 @@ class TgBotService:
     ):
         self.bot_repo = bot_repo
         self.diagram_service = diagram_service
-        self.running = {}
+        self.running: dict[UUID, Dispatcher] = {}
 
-    async def create(self, request: CreateBot):
+    async def get_all(self):
+        return await self.bot_repo.get_all()
+
+    async def create(self, request: CreateBot) -> Bot:
         diagram = await self.diagram_service.get_by_id(request.diagram_id)
         bot = Bot(
             id=uuid.uuid4(),
@@ -50,12 +54,36 @@ class TgBotService:
         await self.bot_repo.delete(bot.id)
         return bot
 
+    async def get_by_id(self, bot_id: UUID):
+        return await self.bot_repo.get_by_id(bot_id)
+
     async def run(self, bot_id: UUID):
         bot = await self.bot_repo.get_by_id(bot_id)
         diagram = await self.diagram_service.get_by_id(bot.diagram_id)
-        self.running[bot.id] = asyncio.create_task(run_diagram(bot, diagram))
+        self.running[bot.id] = await run_diagram(bot, diagram)
+
+    async def stop(self, bot_id: UUID):
+        dp: Dispatcher = self.running.get(bot_id)
+        if dp:
+            await dp.stop_polling()
+            del self.running[bot_id]
+
+    async def restart_bot(self, bot_id: UUID):
+        await self.stop(bot_id)
+        await self.run(bot_id)
+
+    async def restart_bots_by_diagram_id(self, diagram_id: UUID):
+        bots = await self.bot_repo.get_all()
+        for bot in bots:
+            if bot.diagram_id == diagram_id:
+                await self.restart_bot(bot.id)
+
+    async def startup(self):
+        bots = await self.bot_repo.get_all()
+        for bot in bots:
+            if bot.run_on_startup:
+                await self.run(bot.id)
 
     async def shutdown(self):
-        for task in self.running.values():
-            task.cancel()
-        self.running.clear()
+        for dp in self.running.values():
+            await dp.stop_polling()

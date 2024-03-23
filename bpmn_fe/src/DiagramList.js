@@ -9,7 +9,7 @@ const DiagramList = () => {
 
     const createNewDiagram = async () => {
         try {
-            const response = await axios.post('http://localhost:8000/diagrams/', {});
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/diagrams/`, {});
             const newDiagramId = response.data.id;
             navigate(`/editor/${newDiagramId}`);
         } catch (error) {
