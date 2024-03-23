@@ -30,7 +30,8 @@ async def return_404(req, exc):
 async def lifespan(app: FastAPI):
     injector.binder.install(AppModule())
     diagram_repo: Repo[uuid.UUID, Diagram] = injector.get(Repo[uuid.UUID, Diagram])
-    with open('examples/echo_diagram.json') as f:
+    # with open('examples/echo_diagram.json') as f:
+    with open('examples/curl_example.json') as f:
         diagram = Diagram(**json.load(f))
         await diagram_repo.create(diagram)
 
