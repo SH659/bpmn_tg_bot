@@ -74,21 +74,22 @@ export default class CustomContextPadProvider extends ContextPadProvider {
             };
         }
 
-
-        assign(result, {
-            'append.message-intermediate-event': appendAction(
-                'bpmn:IntermediateCatchEvent',
-                'bpmn-icon-intermediate-event-catch-message',
-                translate('Append MessageIntermediateCatchEvent'),
-                {eventDefinitionType: 'bpmn:MessageEventDefinition'}
-            ),
-            'append.message-intermediate-throw-event': appendAction(
-                'bpmn:IntermediateThrowEvent',
-                'bpmn-icon-intermediate-event-throw-message',
-                translate('Append Intermediate/Boundary Event'),
-                {eventDefinitionType: 'bpmn:MessageEventDefinition'}
-            )
-        })
+        if (element.type !== "bpmn:SequenceFlow") {
+            assign(result, {
+                'append.message-intermediate-event': appendAction(
+                    'bpmn:IntermediateCatchEvent',
+                    'bpmn-icon-intermediate-event-catch-message',
+                    translate('Append MessageIntermediateCatchEvent'),
+                    {eventDefinitionType: 'bpmn:MessageEventDefinition'}
+                ),
+                'append.message-intermediate-throw-event': appendAction(
+                    'bpmn:IntermediateThrowEvent',
+                    'bpmn-icon-intermediate-event-throw-message',
+                    translate('Append Intermediate/Boundary Event'),
+                    {eventDefinitionType: 'bpmn:MessageEventDefinition'}
+                )
+            })
+        }
         return result;
     }
 }
