@@ -20,7 +20,7 @@ const DiagramEditor = () => {
             modelerInstance.current = new BpmnModeler({
                 container: modelerRef.current,
                 additionalModules: [customModule, resizeTask],
-                  taskResizingEnabled: true,
+                taskResizingEnabled: true,
             });
         }
     }, [diagramId]);
@@ -81,6 +81,16 @@ const DiagramEditor = () => {
         }
     };
 
+    const assignDefaultBot = async () => {
+        try {
+            console.log('Assigning default bot', diagramId)
+            await axios.put(`${process.env.REACT_APP_BACKEND_URL}/bot/tg/assign_default/${diagramId}`);
+        } catch (error) {
+            console.error('Failed to assign default bot:', error);
+        }
+    };
+
+
     return (
         <div className="container-fluid" style={{height: '100vh'}}>
             <div className="row mb-3 align-items-center">
@@ -109,9 +119,12 @@ const DiagramEditor = () => {
                     </div>
                     <div className="row">
                         <div className="col-12 d-flex align-items-center justify-content-start">
-                            <button className="btn btn-primary btn-sm" onClick={handleSave}>Save</button>
+                            <button className="btn btn-primary btn-sm me-2" onClick={handleSave}>Save</button>
                             <button className="btn btn-warning btn-sm me-2" onClick={restartBotsByDiagramId}>
                                 Restart Bots
+                            </button>
+                            <button className="btn btn-success btn-sm me-2" onClick={assignDefaultBot}>
+                                Assign Default Bot
                             </button>
                         </div>
                     </div>

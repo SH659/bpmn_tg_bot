@@ -6,6 +6,7 @@ import httpx
 from pydantic import BaseModel, Field
 
 from diagram.parser.bpmn_parser import Process, SequenceFlowItem, Event
+from tg_bot.errors import NoResponseError, ValidationError
 
 
 @dataclass
@@ -69,7 +70,13 @@ class BpmnExecutor:
                     break
 
         if state.current_event_id is None:
-            raise ValueError('No start event found')
+            for event in self.process.events:
+                if event.type == 'startEvent' and ':' in event.name:
+                    state.current_event_id = event.id
+                    break
+
+        if state.current_event_id is None:
+            raise NoResponseError('No start event found')
 
         res = []
         event = current_event()
@@ -100,7 +107,7 @@ class BpmnExecutor:
                     try:
                         value = dt(data.message)
                     except ValueError:
-                        return [SendMessage('Invalid value')]
+                        raise ValidationError('Invalid value')
                     state.data[key] = value
                 return []
             case 'intermediateThrowEvent':

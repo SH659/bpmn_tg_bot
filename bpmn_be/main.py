@@ -41,13 +41,18 @@ async def lifespan(app: FastAPI):
             try:
                 await diagram_service.get_by_name(diagram.name)
             except DiagramNotFoundError:
-                print(diagram)
                 await diagram_repo.create(diagram)
 
     bot_repo: Repo[uuid.UUID, Bot] = injector.get(Repo[uuid.UUID, Bot])
     token = settings.DEFAULT_TG_BOT_TOKEN
-    diagram_id = uuid.UUID('b9a7d66f-c0e3-4b7e-9c9b-e047b998722c')
-    bot = Bot(id=uuid.uuid4(), name='test', token=token, diagram_id=diagram_id, run_on_startup=True)
+    diagram_id = (await diagram_service.get_by_name('echo_example')).id
+    bot = Bot(
+        id=uuid.uuid4(),
+        name=settings.DEFAULT_BOT,
+        token=token,
+        diagram_id=diagram_id,
+        run_on_startup=True
+    )
     await bot_repo.create(bot)
 
     tg_bot_service = injector.get(TgBotService)

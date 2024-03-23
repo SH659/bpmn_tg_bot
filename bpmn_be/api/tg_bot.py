@@ -25,6 +25,16 @@ async def create_bot(
     return await bots.create(request)
 
 
+@router.put("/assign_default/{diagram_id}")
+async def assign_default_bot(
+    diagram_id: UUID,
+    bots=di(TgBotService)
+):
+    bot = await bots.get_default()
+    bot.diagram_id = diagram_id
+    await bots.update(bot.id, UpdateBot(diagram_id=diagram_id))
+
+
 @router.get("/{bot_id}", response_model=Bot)
 async def get_bot(
     bot_id: UUID,
@@ -40,16 +50,6 @@ async def update_bot(
     bots=di(TgBotService)
 ):
     return await bots.update(bot_id, request)
-
-
-@router.put("/assign_default")
-async def assign_default_bot(
-    diagram_id: UUID,
-    bots=di(TgBotService)
-):
-    bot = await bots.get_default()
-    bot.diagram_id = diagram_id
-    await bots.update(bot.id, UpdateBot(diagram_id=diagram_id))
 
 
 @router.delete("/{bot_id}", response_model=Bot)
