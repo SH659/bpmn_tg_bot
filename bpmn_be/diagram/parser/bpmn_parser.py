@@ -1,5 +1,3 @@
-from pprint import pprint
-
 import xmltodict
 from pydantic import BaseModel, Field
 
@@ -44,7 +42,13 @@ def xml_to_process(xml: str) -> Process:
                 value = [value]
                 process[key] = value
 
-        if key.startswith('bpmn:') and any((key.endswith('Event'), key.endswith('Task'))):
+        if key.startswith('bpmn:') and any(
+            (
+                key.endswith('Event'),
+                key.endswith('Task'),
+                key.endswith(':task')
+            )
+        ):
             for value_item in value:
                 value_item['type'] = key.split(':')[-1]
             events.extend(value)

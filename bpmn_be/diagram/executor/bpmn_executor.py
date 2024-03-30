@@ -125,6 +125,12 @@ class BpmnExecutor:
                     )
                     state.data['resp'] = response.json()
                     return []
+            case 'task':
+                key, expr = event.name.split('=')
+                key = key.strip()
+                expr = expr.strip()
+                state.data[key] = eval(expr.format_map(state.data), {}, state.data)
+                return []
 
         return []
 
