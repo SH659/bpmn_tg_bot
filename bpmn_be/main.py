@@ -9,7 +9,6 @@ from injector import Module, Binder, singleton, InstanceProvider
 from starlette.middleware.cors import CORSMiddleware
 
 from api.api_router import api_router
-from bases.in_memory_repo import InMemoryRepo
 from bases.pickle_repo import PickleRepo
 from bases.repo import Repo
 from core.di import injector
@@ -20,6 +19,7 @@ from diagram.models import Diagram
 from diagram.service import DiagramService
 from tg_bot.errors import BotNotFoundError
 from tg_bot.models import Bot
+from tg_bot.schemas import CreateBot
 from tg_bot.service import TgBotService
 
 configure_logging()
@@ -43,17 +43,18 @@ async def lifespan(app: FastAPI):
             except DiagramNotFoundError:
                 await diagram_repo.create(diagram)
 
-    bot_repo: Repo[uuid.UUID, Bot] = injector.get(Repo[uuid.UUID, Bot])
-    token = settings.DEFAULT_TG_BOT_TOKEN
-    diagram_id = (await diagram_service.get_by_name('echo_example')).id
-    bot = Bot(
-        id=uuid.uuid4(),
-        name=settings.DEFAULT_BOT,
-        token=token,
-        diagram_id=diagram_id,
-        run_on_startup=True
-    )
-    await bot_repo.create(bot)
+    bot_service = injector.get(TgBotService)
+
+    if (bot := await bot_service.get_default(error=False)) is None:
+        diagram_id = (await diagram_service.get_by_name('echo_example')).id
+        bot = await bot_service.create(
+            CreateBot(
+                name=settings.DEFAULT_BOT,
+                token=settings.DEFAULT_TG_BOT_TOKEN,
+                diagram_id=diagram_id,
+                run_on_startup=True
+            )
+        )
 
     tg_bot_service = injector.get(TgBotService)
     await tg_bot_service.startup()
@@ -69,7 +70,11 @@ class AppModule(Module):
         diagram_repo.load()
         atexit.register(diagram_repo.save)
         binder.bind(Repo[uuid.UUID, Diagram], to=InstanceProvider(diagram_repo), scope=singleton)
-        binder.bind(Repo[uuid.UUID, Bot], to=InstanceProvider(InMemoryRepo()), scope=singleton)
+
+        bots_repo = PickleRepo('bots_repo.pkj')
+        bots_repo.load()
+        atexit.register(bots_repo.save)
+        binder.bind(Repo[uuid.UUID, Bot], to=InstanceProvider(bots_repo), scope=singleton)
 
 
 app = FastAPI(

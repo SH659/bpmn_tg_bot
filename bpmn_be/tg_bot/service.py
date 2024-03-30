@@ -27,12 +27,13 @@ class TgBotService:
         self.running: dict[UUID, Dispatcher] = {}
         self.settings = settings
 
-    async def get_default(self):
+    async def get_default(self, error: bool = True):
         bots = await self.bot_repo.get_all()
         for bot in bots:
             if bot.name == self.settings.DEFAULT_BOT:
                 return bot
-        raise BotNotFoundError
+        if error:
+            raise BotNotFoundError
 
     async def get_all(self):
         return await self.bot_repo.get_all()
@@ -43,7 +44,8 @@ class TgBotService:
             id=uuid.uuid4(),
             name=request.name,
             token=request.token,
-            diagram_id=diagram.id
+            diagram_id=diagram.id,
+            run_on_startup=request.run_on_startup
         )
         await self.bot_repo.create(bot)
         return bot
@@ -57,6 +59,8 @@ class TgBotService:
         if request.diagram_id:
             diagram = await self.diagram_service.get_by_id(request.diagram_id)
             bot.diagram_id = diagram.id
+        if request.run_on_startup:
+            bot.run_on_startup = request.run_on_startup
         await self.bot_repo.update(bot)
         return bot
 
