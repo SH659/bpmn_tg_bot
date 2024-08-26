@@ -49,3 +49,7 @@ class DiagramService:
         )
         await self.diagram_repo.update(new)
         return new
+
+    async def delete(self, diagram_id: uuid.UUID) -> None:
+        await self.diagram_repo.delete(diagram_id)
+        return
