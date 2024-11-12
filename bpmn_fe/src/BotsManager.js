@@ -19,7 +19,7 @@ function BotsManager() {
     }, []);
 
     const listBots = async () => {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/bot/tg/`);
+        const response = await axios.get(`${process.env.REACT_APP_TG_BOT_BACKEND_URL}/bot/tg/`);
         setBots(response.data);
     };
 
@@ -36,8 +36,8 @@ function BotsManager() {
         const method = selectedBotId ? 'put' : 'post';
         const endpoint = (
             selectedBotId ?
-                `${process.env.REACT_APP_BACKEND_URL}/bot/tg/${selectedBotId}` :
-                `${process.env.REACT_APP_BACKEND_URL}/bot/tg/`
+                `${process.env.REACT_APP_TG_BOT_BACKEND_URL}/bot/tg/${selectedBotId}` :
+                `${process.env.REACT_APP_TG_BOT_BACKEND_URL}/bot/tg/`
             )
         await axios[method](endpoint, formState, {
             headers: {
@@ -50,18 +50,18 @@ function BotsManager() {
     };
 
     const selectBot = async (botId) => {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/bot/tg/${botId}`);
+        const response = await axios.get(`${process.env.REACT_APP_TG_BOT_BACKEND_URL}/bot/tg/${botId}`);
         setFormState(response.data);
         setSelectedBotId(botId);
     };
 
     const deleteBot = async (botId) => {
-        await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/bot/tg/${botId}`);
+        await axios.delete(`${process.env.REACT_APP_TG_BOT_BACKEND_URL}/bot/tg/${botId}`);
         await listBots(); // Refresh the list
     };
 
     const controlBot = async (botId, action) => {
-        await axios.post(`${process.env.REACT_APP_BACKEND_URL}/bot/tg/${botId}/${action}`);
+        await axios.post(`${process.env.REACT_APP_TG_BOT_BACKEND_URL}/bot/tg/${botId}/${action}`);
         await listBots(); // To reflect any potential changes
     };
 

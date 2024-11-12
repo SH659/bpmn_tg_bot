@@ -28,7 +28,7 @@ const DiagramEditor = () => {
     useEffect(() => {
         const fetchAndLoadDiagram = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/diagrams/${diagramId}`);
+                const response = await axios.get(`${process.env.REACT_APP_DIAGRAM_BACKEND_URL}/diagrams/${diagramId}`);
                 const {xml, name} = response.data;
                 await modelerInstance.current.importXML(xml);
                 setDiagramName(name);
@@ -50,7 +50,7 @@ const DiagramEditor = () => {
 
         modelerInstance.current.saveXML({format: true}).then(async ({xml}) => {
             try {
-                await axios.put(`${process.env.REACT_APP_BACKEND_URL}/diagrams/${diagramId}`, {
+                await axios.put(`${process.env.REACT_APP_DIAGRAM_BACKEND_URL}/diagrams/${diagramId}`, {
                     xml,
                     name: diagramName,
                 });
@@ -74,7 +74,7 @@ const DiagramEditor = () => {
     // Function to restart bots by diagram ID
     const restartBotsByDiagramId = async () => {
         try {
-            await axios.post(`${process.env.REACT_APP_BACKEND_URL}/bot/tg/restart_by_diagram/${diagramId}`);
+            await axios.post(`${process.env.REACT_APP_TG_BOT_BACKEND_URL}/bot/tg/restart_by_diagram/${diagramId}`);
         } catch (error) {
             console.error('Failed to restart bots:', error);
             alert('Error restarting bots. Check the console for more details.');
@@ -84,7 +84,7 @@ const DiagramEditor = () => {
     const assignDefaultBot = async () => {
         try {
             console.log('Assigning default bot', diagramId)
-            await axios.put(`${process.env.REACT_APP_BACKEND_URL}/bot/tg/assign_default/${diagramId}`);
+            await axios.put(`${process.env.REACT_APP_TG_BOT_BACKEND_URL}/bot/tg/assign_default/${diagramId}`);
         } catch (error) {
             console.error('Failed to assign default bot:', error);
         }

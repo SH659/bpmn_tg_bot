@@ -9,7 +9,7 @@ const DiagramList = () => {
 
     const createNewDiagram = async () => {
         try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/diagrams/`, {});
+            const response = await axios.post(`${process.env.REACT_APP_DIAGRAM_BACKEND_URL}/diagrams/`, {});
             const newDiagramId = response.data.id;
             navigate(`/editor/${newDiagramId}`);
         } catch (error) {
@@ -19,7 +19,7 @@ const DiagramList = () => {
 
     useEffect(() => {
         const fetchDiagrams = async () => {
-            const result = await axios(`${process.env.REACT_APP_BACKEND_URL}/diagrams/`);
+            const result = await axios(`${process.env.REACT_APP_DIAGRAM_BACKEND_URL}/diagrams/`);
             setDiagrams(result.data);
         };
         fetchDiagrams();
