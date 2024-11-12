@@ -4,7 +4,7 @@ from uuid import UUID
 from aiogram import Dispatcher
 from injector import inject, singleton
 
-from bases.repo import Repo
+from bpmn_be.bases.repo import Repo
 from core.settings import Settings
 from diagram.service import DiagramService
 from tg_bot.diagram_runner import run_diagram

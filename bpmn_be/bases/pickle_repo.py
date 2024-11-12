@@ -1,7 +1,7 @@
 import pickle
 
-from bases.in_memory_repo import InMemoryRepo
-from bases.repo import T_id, T_obj
+from bpmn_be.bases.in_memory_repo import InMemoryRepo
+from bpmn_be.bases.repo import T_id, T_obj
 
 
 class PickleRepo(InMemoryRepo[T_id, T_obj]):

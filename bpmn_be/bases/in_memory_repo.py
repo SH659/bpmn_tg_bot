@@ -1,6 +1,6 @@
 from typing import Optional
 
-from bases.repo import Repo, T_id, T_obj
+from bpmn_be.bases.repo import Repo, T_id, T_obj
 
 
 class InMemoryRepo(Repo[T_id, T_obj]):

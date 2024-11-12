@@ -9,8 +9,8 @@ from injector import Module, Binder, singleton, InstanceProvider
 from starlette.middleware.cors import CORSMiddleware
 
 from api.api_router import api_router
-from bases.pickle_repo import PickleRepo
-from bases.repo import Repo
+from bpmn_be.bases.pickle_repo import PickleRepo
+from bpmn_be.bases.repo import Repo
 from core.di import injector
 from core.logs import configure_logging
 from core.settings import settings
