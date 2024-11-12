@@ -1,3 +1,6 @@
+import uuid
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -9,3 +12,9 @@ class CreateDiagram(BaseModel):
 class UpdateDiagram(BaseModel):
     name: str = None
     xml: str = None
+
+
+class Diagram(BaseModel):
+    id: uuid.UUID
+    name: Optional[str]
+    xml: str

@@ -2,10 +2,10 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from core.di import di
-from tg_bot.models import Bot
-from tg_bot.schemas import CreateBot, UpdateBot
-from tg_bot.service import TgBotService
+from bpmn_be.bases.di import di
+from tg_bot.schemas import Bot
+from bpmn_be.tg_bot_service.tg_bot.schemas import CreateBot, UpdateBot
+from bpmn_be.tg_bot_service.tg_bot.service import TgBotService
 
 router = APIRouter()
 

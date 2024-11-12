@@ -5,12 +5,12 @@ from aiogram import Dispatcher
 from injector import inject, singleton
 
 from bpmn_be.bases.repo import Repo
-from core.settings import Settings
-from diagram.service import DiagramService
-from tg_bot.diagram_runner import run_diagram
-from tg_bot.errors import BotNotFoundError
-from tg_bot.models import Bot
-from tg_bot.schemas import CreateBot, UpdateBot
+from bpmn_be.diagram_service_api_client.client import DiagramApiClient
+from ..settings import Settings
+from bpmn_be.tg_bot_service.tg_bot.diagram_runner import run_diagram
+from diagram.errors import BotNotFoundError
+from tg_bot.schemas import Bot
+from bpmn_be.tg_bot_service.tg_bot.schemas import CreateBot, UpdateBot
 
 
 @singleton
@@ -19,7 +19,7 @@ class TgBotService:
     def __init__(
         self,
         bot_repo: Repo[UUID, Bot],
-        diagram_service: DiagramService,
+        diagram_service: DiagramApiClient,
         settings: Settings
     ):
         self.bot_repo = bot_repo

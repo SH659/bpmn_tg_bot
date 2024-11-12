@@ -15,3 +15,11 @@ class UpdateBot(BaseModel):
     token: str = None
     diagram_id: UUID = None
     run_on_startup: bool = None
+
+
+class Bot(BaseModel):
+    id: UUID
+    name: str
+    token: str | None
+    diagram_id: UUID | None
+    run_on_startup: bool = False

@@ -4,8 +4,8 @@ from injector import inject
 
 from bpmn_be.bases.repo import Repo
 from diagram.errors import DiagramNotFoundError
-from diagram.models import Diagram, empty_diagram_xml
-from diagram.schemas import CreateDiagram, UpdateDiagram
+from diagram.models import empty_diagram_xml
+from schemas import CreateDiagram, UpdateDiagram, Diagram
 
 
 class DiagramService:

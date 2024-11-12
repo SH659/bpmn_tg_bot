@@ -6,7 +6,7 @@ import httpx
 from pydantic import BaseModel, Field
 
 from diagram.parser.bpmn_parser import Process, SequenceFlowItem, Event
-from tg_bot.errors import NoResponseError, ValidationError
+from diagram.errors import NoResponseError, ValidationError
 
 
 @dataclass

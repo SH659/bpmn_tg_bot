@@ -2,9 +2,8 @@ import uuid
 
 from fastapi import APIRouter
 
-from core.di import di
-from diagram.models import Diagram
-from diagram.schemas import CreateDiagram, UpdateDiagram
+from bpmn_be.bases.di import di
+from schemas import CreateDiagram, UpdateDiagram, Diagram
 from diagram.service import DiagramService
 
 router = APIRouter()
