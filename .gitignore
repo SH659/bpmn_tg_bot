@@ -112,7 +112,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-bpmn_be/.env
+bpmn_be/diagram_service/.env
 ../.venv
 env/
 venv/

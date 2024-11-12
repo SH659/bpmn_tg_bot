@@ -35,8 +35,8 @@ async def lifespan(app: FastAPI):
     diagram_repo: Repo[uuid.UUID, Diagram] = injector.get(Repo[uuid.UUID, Diagram])
     diagram_service: DiagramService = injector.get(DiagramService)
 
-    for file in os.listdir('examples'):
-        with open(f'examples/{file}') as f:
+    for file in os.listdir('diagram_service/examples'):
+        with open(f'diagram_service/examples/{file}') as f:
             diagram = Diagram(**json.load(f))
             try:
                 await diagram_service.get_by_name(diagram.name)
