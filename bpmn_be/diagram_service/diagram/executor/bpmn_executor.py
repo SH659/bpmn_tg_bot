@@ -14,6 +14,7 @@ class Data:
     message: str = None
 
 
+@dataclass
 class Action:
     pass
 

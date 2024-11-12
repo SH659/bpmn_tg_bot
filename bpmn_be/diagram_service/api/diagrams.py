@@ -3,8 +3,8 @@ import uuid
 from fastapi import APIRouter
 
 from bpmn_be.bases.di import di
-from schemas import CreateDiagram, UpdateDiagram, Diagram
 from diagram.service import DiagramService
+from schemas import CreateDiagram, UpdateDiagram, Diagram, RunDiagramResult
 
 router = APIRouter()
 
@@ -39,3 +39,14 @@ async def update_diagram(
     ds: DiagramService = di(DiagramService)
 ):
     return await ds.update(diagram_id, diagram_update)
+
+
+@router.post("/{diagram_id}/run")
+async def step_diagram(
+    diagram_id: uuid.UUID,
+    message: str,
+    state: dict,
+    ds: DiagramService = di(DiagramService),
+):
+    actions, new_state = await ds.run_diagram(diagram_id, message=message, state=state)
+    return RunDiagramResult(actions=actions, new_state=new_state)

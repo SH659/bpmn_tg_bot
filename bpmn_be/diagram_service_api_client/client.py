@@ -3,7 +3,7 @@ from typing import List
 
 import httpx
 
-from schemas import CreateDiagram, UpdateDiagram, Diagram
+from schemas import CreateDiagram, UpdateDiagram, Diagram, RunDiagramResult
 
 
 class DiagramApiClient:
@@ -41,3 +41,12 @@ class DiagramApiClient:
             response = await client.put(f"{self.base_url}/{diagram_id}", json=request.dict())
             response.raise_for_status()
             return Diagram(**response.json())
+
+    async def run_diagram(self, diagram_id: uuid.UUID, message: str, state: dict) -> RunDiagramResult:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.base_url}/{diagram_id}/run",
+                json={"message": message, "state": state},
+            )
+            response.raise_for_status()
+            return RunDiagramResult(**response.json())

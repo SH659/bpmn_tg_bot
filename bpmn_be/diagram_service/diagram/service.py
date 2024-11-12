@@ -1,10 +1,13 @@
+import dataclasses
 import uuid
 
 from injector import inject
 
 from bpmn_be.bases.repo import Repo
 from diagram.errors import DiagramNotFoundError
+from diagram.executor.bpmn_executor import BpmnExecutor, Data, State
 from diagram.models import empty_diagram_xml
+from diagram.parser.bpmn_parser import xml_to_process
 from schemas import CreateDiagram, UpdateDiagram, Diagram
 
 
@@ -49,3 +52,11 @@ class DiagramService:
         )
         await self.diagram_repo.update(new)
         return new
+
+    async def run_diagram(self, diagram_id: uuid.UUID, message: str, state: dict):
+        diagram = await self.get_by_id(diagram_id)
+        process = xml_to_process(diagram.xml)
+        executor = BpmnExecutor(process)
+        actions, new_state = await executor.step(Data(message), State(**state))
+        actions = [dataclasses.asdict(action) for action in actions]
+        return actions, new_state

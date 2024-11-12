@@ -18,3 +18,8 @@ class Diagram(BaseModel):
     id: uuid.UUID
     name: Optional[str]
     xml: str
+
+
+class RunDiagramResult(BaseModel):
+    actions: list[dict]
+    new_state: dict

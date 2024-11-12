@@ -74,8 +74,7 @@ class TgBotService:
 
     async def run(self, bot_id: UUID):
         bot = await self.bot_repo.get_by_id(bot_id)
-        diagram = await self.diagram_service.get_by_id(bot.diagram_id)
-        self.running[bot.id] = await run_diagram(bot, diagram)
+        self.running[bot.id] = await run_diagram(bot, self.diagram_service)
 
     async def stop(self, bot_id: UUID):
         dp: Dispatcher = self.running.get(bot_id)
