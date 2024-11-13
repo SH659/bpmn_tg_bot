@@ -8,8 +8,11 @@ from aiogram.fsm.context import FSMContext
 
 from client import DiagramApiClient
 from diagram.errors import ValidationError, NoResponseError
-from diagram.executor.bpmn_executor import State, SendMessage, WaitMessage
+from diagram.executor.bpmn_executor import State
+from schemas import SendMessage, WaitMessage
 from tg_bot.schemas import Bot
+
+logger = logging.getLogger(__name__)
 
 
 async def run_diagram(tg_bot: Bot, ds: DiagramApiClient):
@@ -25,7 +28,7 @@ async def run_diagram(tg_bot: Bot, ds: DiagramApiClient):
         bpmn_state = State(**data['bpmn_state']) if data else State()
 
         try:
-            res, bpmn_state = await ds.run_diagram(tg_bot.diagram_id, message.text, bpmn_state.model_dump())
+            res = await ds.run_diagram(tg_bot.diagram_id, message.text, bpmn_state.model_dump())
         except ValueError as e:
             traceback.print_exc()
             await message.answer('internal error')
@@ -36,8 +39,11 @@ async def run_diagram(tg_bot: Bot, ds: DiagramApiClient):
         except NoResponseError as e:
             return
 
-        for item in res:
-            match item:
+        logger.info(f'Actions: {res.actions}')
+
+        for action in res.actions:
+            logger.info(f'Action: {action}')
+            match action:
                 case SendMessage(text):
                     await message.answer(text)
                 case WaitMessage():
@@ -45,7 +51,9 @@ async def run_diagram(tg_bot: Bot, ds: DiagramApiClient):
                 case _:
                     pass
 
-        await state.set_data({'bpmn_state': bpmn_state.model_dump(mode='json')})
+        logger.info(f'New state: {res.new_state}')
+        await state.set_data({'bpmn_state': res.new_state})
+        logger.info(f'Processed message: {message.text}')
 
     task = asyncio.create_task(dp.start_polling(bot, handle_signals=False))
     return dp

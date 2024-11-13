@@ -7,26 +7,12 @@ from pydantic import BaseModel, Field
 
 from diagram.parser.bpmn_parser import Process, SequenceFlowItem, Event
 from diagram.errors import NoResponseError, ValidationError
+from schemas import Action, SendMessage
 
 
 @dataclass
 class Data:
     message: str = None
-
-
-@dataclass
-class Action:
-    pass
-
-
-@dataclass
-class SendMessage(Action):
-    message: str
-
-
-@dataclass
-class WaitMessage(Action):
-    pass
 
 
 class State(BaseModel):

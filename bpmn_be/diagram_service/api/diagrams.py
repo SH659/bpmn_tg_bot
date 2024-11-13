@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from bpmn_be.bases.di import di
 from diagram.service import DiagramService
-from schemas import CreateDiagram, UpdateDiagram, Diagram, RunDiagramResult
+from schemas import CreateDiagram, UpdateDiagram, Diagram, RunDiagramResult, RunDiagramPayload, RunDiagramResultDTO
 
 router = APIRouter()
 
@@ -44,9 +44,8 @@ async def update_diagram(
 @router.post("/{diagram_id}/run")
 async def step_diagram(
     diagram_id: uuid.UUID,
-    message: str,
-    state: dict,
+    payload: RunDiagramPayload,
     ds: DiagramService = di(DiagramService),
 ):
-    actions, new_state = await ds.run_diagram(diagram_id, message=message, state=state)
-    return RunDiagramResult(actions=actions, new_state=new_state)
+    actions, new_state = await ds.run_diagram(diagram_id, message=payload.message, state=payload.state)
+    return RunDiagramResultDTO(actions=actions, new_state=new_state)

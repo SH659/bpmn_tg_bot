@@ -3,7 +3,7 @@ from typing import List
 
 import httpx
 
-from schemas import CreateDiagram, UpdateDiagram, Diagram, RunDiagramResult
+from schemas import CreateDiagram, UpdateDiagram, Diagram, RunDiagramResult, RunDiagramPayload, SendMessage, WaitMessage
 
 
 class DiagramApiClient:
@@ -46,7 +46,19 @@ class DiagramApiClient:
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 f"{self.base_url}/{diagram_id}/run",
-                json={"message": message, "state": state},
+                json=RunDiagramPayload(**{"message": message, "state": state}).model_dump(),
             )
             response.raise_for_status()
-            return RunDiagramResult(**response.json())
+
+            resp_json = response.json()
+            # deserealize response actions
+            actions = {
+                SendMessage.__name__: SendMessage,
+                WaitMessage.__name__: WaitMessage,
+            }
+            resp_json['actions'] = [
+                actions[action.pop('__type__')](**action) for action in resp_json['actions']
+            ]
+
+            res = RunDiagramResult(**resp_json)
+            return res

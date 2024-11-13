@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import dataclass
 from typing import Optional
 
 from pydantic import BaseModel
@@ -20,6 +21,31 @@ class Diagram(BaseModel):
     xml: str
 
 
-class RunDiagramResult(BaseModel):
+class RunDiagramPayload(BaseModel):
+    message: str
+    state: dict
+
+
+class RunDiagramResultDTO(BaseModel):
     actions: list[dict]
     new_state: dict
+
+
+class RunDiagramResult(BaseModel):
+    actions: list['Action']
+    new_state: dict
+
+
+@dataclass
+class Action:
+    pass
+
+
+@dataclass
+class SendMessage(Action):
+    message: str
+
+
+@dataclass
+class WaitMessage(Action):
+    pass
