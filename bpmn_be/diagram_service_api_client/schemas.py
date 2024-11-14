@@ -49,3 +49,8 @@ class SendMessage(Action):
 @dataclass
 class WaitMessage(Action):
     pass
+
+
+@dataclass
+class Stop(Action):
+    pass

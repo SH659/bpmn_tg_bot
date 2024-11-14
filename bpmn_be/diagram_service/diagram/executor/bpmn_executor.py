@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 from diagram.errors import ValidationError
 from diagram.parser.bpmn_parser import Process, SequenceFlowItem, Event
-from schemas import Action, SendMessage
+from schemas import Action, SendMessage, WaitMessage, Stop
 
 
 @dataclass
@@ -70,6 +70,9 @@ class BpmnExecutor:
         while state.current_event_id:
             r = await self.execute_event(event, data, state)
             res.extend(r)
+            if len(r) > 0 and isinstance(r[-1], Stop):
+                res.pop()
+                break
             self.go_to_next_event(state)
             event = current_event()
             if event is not None and event.type in (
@@ -86,15 +89,20 @@ class BpmnExecutor:
                     key, dt = event.name.split(':')
                     key = key.strip()
                     dt = dt.strip()
-                    dt = {
+                    data_type = {
                         'int': int,
                         'float': float,
                         'str': str,
                     }[dt]
                     try:
-                        value = dt(data.message)
-                    except ValueError:
-                        raise ValidationError('Invalid value')
+                        value = data_type(data.message)
+                    except ValueError as e:
+                        human_readable_error = {
+                            'int': 'Enter a number. Example: 123',
+                            'float': 'Enter a number. Example: 123.45',
+                            'str': 'Enter a string. Example: hello',
+                        }
+                        return [SendMessage(human_readable_error[dt]), Stop()]
                     state.data[key] = value
                 return []
             case 'intermediateThrowEvent':
