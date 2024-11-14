@@ -5,8 +5,8 @@ import curlparser
 import httpx
 from pydantic import BaseModel, Field
 
+from diagram.errors import ValidationError
 from diagram.parser.bpmn_parser import Process, SequenceFlowItem, Event
-from diagram.errors import NoResponseError, ValidationError
 from schemas import Action, SendMessage
 
 
@@ -63,7 +63,7 @@ class BpmnExecutor:
                     break
 
         if state.current_event_id is None:
-            raise NoResponseError('No start event found')
+            return [], state
 
         res = []
         event = current_event()
@@ -118,6 +118,11 @@ class BpmnExecutor:
                 expr = expr.strip()
                 state.data[key] = eval(expr.format_map(state.data), {}, state.data)
                 return []
+            case 'endEvent':
+                return []
+            case _:
+                print(f'Unsupported event type: {event.type}')
+                raise NotImplementedError
 
         return []
 
@@ -125,14 +130,25 @@ class BpmnExecutor:
         event = self.events[state.current_event_id]
         if event.outgoing is None:
             return None
+        if isinstance(event.outgoing, list) and len(event.outgoing) > 1:
+            raise NotImplementedError
         flow_item = self.flow_map[event.outgoing]
-        return self.events[flow_item.target_ref]
+        next_event = self.events[flow_item.target_ref]
+        if next_event.type != 'exclusiveGateway':
+            return next_event
+
+        for out in next_event.outgoing:
+            flow_item = self.flow_map[out]
+            eval_res = eval(flow_item.name.format_map(state.data), {}, state.data)
+            if bool(eval_res):
+                next_event = self.events[flow_item.target_ref]
+                return next_event
+        return None
 
     def go_to_next_event(self, state: State):
-        event = self.events[state.current_event_id]
-        if event.outgoing is None:
+        next_event = self.get_next_event(state)
+        if next_event is None:
             state.current_event_id = None
             return
-        flow_item = self.flow_map[event.outgoing]
-        state.current_event_id = flow_item.target_ref
-        return self.events[state.current_event_id]
+        state.current_event_id = next_event.id
+        return next_event
