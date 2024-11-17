@@ -44,9 +44,11 @@ class DiagramApiClient:
 
     async def run_diagram(self, diagram_id: uuid.UUID, message: str, state: dict) -> RunDiagramResult:
         async with httpx.AsyncClient() as client:
+            payload = RunDiagramPayload(**{"message": message, "state": state}).model_dump()
+            print('payload:', payload)
             response = await client.post(
                 f"{self.base_url}/{diagram_id}/run",
-                json=RunDiagramPayload(**{"message": message, "state": state}).model_dump(),
+                json=payload,
             )
             response.raise_for_status()
 

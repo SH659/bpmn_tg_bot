@@ -5,6 +5,7 @@ import traceback
 
 from aiogram import Bot as AiogramBot, Dispatcher, types
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.storage.memory import MemoryStorage
 
 from client import DiagramApiClient
 from diagram.errors import ValidationError, NoResponseError
@@ -26,9 +27,14 @@ async def run_diagram(tg_bot: Bot, ds: DiagramApiClient):
         await bot.send_chat_action(message.chat.id, 'typing')
         data = await state.get_data()
         bpmn_state = State(**data['bpmn_state']) if data else State()
+        bpmn_state.data['user_id'] = message.from_user.id
 
         try:
-            res = await ds.run_diagram(tg_bot.diagram_id, message.text, bpmn_state.model_dump())
+            res = await ds.run_diagram(
+                tg_bot.diagram_id,
+                message.text,
+                bpmn_state.model_dump()
+            )
         except ValueError as e:
             traceback.print_exc()
             await message.answer('internal error')

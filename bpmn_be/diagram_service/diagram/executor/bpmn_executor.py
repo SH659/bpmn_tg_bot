@@ -1,3 +1,4 @@
+import json
 from copy import deepcopy
 from dataclasses import dataclass
 
@@ -5,9 +6,8 @@ import curlparser
 import httpx
 from pydantic import BaseModel, Field
 
-from diagram.errors import ValidationError
 from diagram.parser.bpmn_parser import Process, SequenceFlowItem, Event
-from schemas import Action, SendMessage, WaitMessage, Stop
+from schemas import Action, SendMessage, Stop
 
 
 @dataclass
@@ -118,13 +118,18 @@ class BpmnExecutor:
                         headers=curl.header,
                         data=curl.data,
                     )
+                    print('payload', response.request.content)
+                    print(f'response {response.status_code}: {response.json()}')
                     state.data['resp'] = response.json()
                     return []
             case 'task':
                 key, expr = event.name.split('=')
                 key = key.strip()
                 expr = expr.strip()
-                state.data[key] = eval(expr.format_map(state.data), {}, state.data)
+                print('state: ', state.data)
+                print('expr:', expr)
+                res = eval(expr, {'json': json}, state.data)
+                state.data[key] = res
                 return []
             case 'endEvent':
                 return []

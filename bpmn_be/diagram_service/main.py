@@ -15,8 +15,8 @@ from bpmn_be.bases.pickle_repo import PickleRepo
 from bpmn_be.bases.repo import Repo
 from diagram.errors import BotNotFoundError
 from diagram.errors import DiagramNotFoundError
-from schemas import Diagram
 from diagram.service import DiagramService
+from schemas import Diagram
 from settings import settings
 
 configure_logging()
@@ -44,7 +44,8 @@ async def lifespan(app: FastAPI):
 
 class AppModule(Module):
     def configure(self, binder: Binder) -> None:
-        diagram_repo = PickleRepo(os.path.join(
+        diagram_repo = PickleRepo(
+            os.path.join(
                 os.path.abspath(os.path.dirname(__file__)),
                 'diagram_repo.pkl'
             )
