@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from bpmn_be.bases.di import di
 from diagram.service import DiagramService
-from schemas import CreateDiagram, UpdateDiagram, Diagram, RunDiagramResult, RunDiagramPayload, RunDiagramResultDTO
+from schemas import CreateDiagram, UpdateDiagram, Diagram, RunDiagramPayload, RunDiagramResultDTO
 
 router = APIRouter()
 

@@ -3,7 +3,7 @@ from collections import Counter
 from fastapi import FastAPI, HTTPException, Query
 
 from database import Product, Order, OrderItem, db
-from schemas import OrderRequest, OrderResponse, ProductResponse, ProductsResponse, OrderItemRequest
+from schemas import OrderRequest, OrderResponse, ProductResponse, ProductsResponse
 from settings import settings
 
 app = FastAPI()

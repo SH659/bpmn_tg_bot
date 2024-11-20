@@ -6,11 +6,11 @@ from injector import inject, singleton
 
 from bpmn_be.bases.repo import Repo
 from bpmn_be.diagram_service_api_client.client import DiagramApiClient
-from ..settings import Settings
 from bpmn_be.tg_bot_service.tg_bot.diagram_runner import run_diagram
+from bpmn_be.tg_bot_service.tg_bot.schemas import CreateBot, UpdateBot
 from diagram.errors import BotNotFoundError
 from tg_bot.schemas import Bot
-from bpmn_be.tg_bot_service.tg_bot.schemas import CreateBot, UpdateBot
+from ..settings import Settings
 
 
 @singleton

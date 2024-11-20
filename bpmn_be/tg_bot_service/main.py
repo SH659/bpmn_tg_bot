@@ -17,7 +17,6 @@ from bpmn_be.tg_bot_service.tg_bot.schemas import CreateBot
 from bpmn_be.tg_bot_service.tg_bot.service import TgBotService
 from diagram.errors import BotNotFoundError
 from diagram.errors import DiagramNotFoundError
-from schemas import Diagram
 from settings import settings
 from tg_bot.schemas import Bot
 

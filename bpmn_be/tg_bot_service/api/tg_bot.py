@@ -3,9 +3,9 @@ from uuid import UUID
 from fastapi import APIRouter
 
 from bpmn_be.bases.di import di
-from tg_bot.schemas import Bot
 from bpmn_be.tg_bot_service.tg_bot.schemas import CreateBot, UpdateBot
 from bpmn_be.tg_bot_service.tg_bot.service import TgBotService
+from tg_bot.schemas import Bot
 
 router = APIRouter()
 

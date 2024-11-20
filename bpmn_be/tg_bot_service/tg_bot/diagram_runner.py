@@ -5,7 +5,6 @@ import traceback
 
 from aiogram import Bot as AiogramBot, Dispatcher, types
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.storage.memory import MemoryStorage
 
 from client import DiagramApiClient
 from diagram.errors import ValidationError, NoResponseError
